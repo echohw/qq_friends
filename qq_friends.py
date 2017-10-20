@@ -22,10 +22,20 @@ USER_AGENTS_MOBILE = [
 ]
 
 
-def save_to_mongo(results, collection, DB="pyspider"):  # 保存到mongo数据库
+def save_to_mongo(results, collection,type="i", DB="pyspider"):  # 保存到mongo数据库
     client = MongoClient("127.0.0.1", 27017)
     db = client[DB]
-    db[collection].insert(results)
+    collection=db[collection]
+    if type=="i": # 当type为"i"时，意味着数据来自于全局的字典，只需进行插入操作即可
+        collection.insert(results)
+    elif type=="u": # 处理抓取每个页面后的数据，在数据库中进行数据更新
+        regx = re.compile(".*", re.IGNORECASE)
+        for number, friends in results.items():
+            count = collection.find({"%s.%s" % (number, number): regx}).count()
+            if count == 0:
+                collection.insert({number: {number: friends[number]}})  # 如果数据库中不存在则创建记录
+            for num, nickname in friends.items():
+                collection.update({"%s.%s" % (number, number): regx}, {"$set": {"%s.%s" % (number, num): nickname}})
 
 
 def get_driver(type="Chrome"):
