@@ -215,4 +215,4 @@ for number in friends_dic[username]:  # 从已抓取的我的好友列表中提�
 
 # 程序执行完毕将数据存入mongo数据库
 for number, fds in friends_dic.items():  # 将字典中的数据分别存入mongo数据库
-    save_to_mongo({number, fds}, "qzone")
+    save_to_mongo({number: fds}, "qzone")
